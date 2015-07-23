@@ -1594,11 +1594,11 @@ rule Setuid
 
 rule Shell
 {
-    Depends shell : $(<) ;
+    LocalDepends shell : $(<) ;
     Depends $(<) : $(>) ;
     SEARCH on $(>) = $(SEARCH_SOURCE) ;
     MODE on $(<) = $(SHELLMODE) ;
-    Clean clean : $(<) ;
+    LocalClean clean : $(<) ;
     Chmod $(<) ;
 }
 
@@ -2426,7 +2426,6 @@ if $(NT)
         {
             $(LINK) $(LINKFLAGS) /out:$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
 	}
-}
     }
     else if $(JAM_TOOLSET) = VISUALC16
     {
