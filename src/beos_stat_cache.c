@@ -1,5 +1,7 @@
 // beos_stat_cache.c
 
+#if defined(__BEOS___) || defined(__HAIKU__)
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -176,7 +178,7 @@ beos_stat_cache_opendir(const char *dirName)
 
 	reply->clientData = reply->buffer;
 
-	// a bit ugly, but anyway... 
+	// a bit ugly, but anyway...
 	return (DIR*)reply;
 }
 
@@ -219,3 +221,4 @@ beos_stat_cache_closedir(DIR *dir)
 	return 0;
 }
 
+#endif // defined(__BEOS___) || defined(__HAIKU__)
