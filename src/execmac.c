@@ -14,7 +14,7 @@
  *
  * Each word must be an individual element in a jam variable value.
  *
- * In $(JAMSHELL), % expands to the command string and ! expands to 
+ * In $(JAMSHELL), % expands to the command string and ! expands to
  * the slot number (starting at 1) for multiprocess (-j) invocations.
  * If $(JAMSHELL) doesn't include a %, it is tacked on as the last
  * argument.
@@ -34,37 +34,32 @@
  * 01/20/00 (seiwald) - Upgraded from K&R to ANSI C
  */
 
-# include "jam.h"
-# include "lists.h"
-# include "execcmd.h"
-# include <errno.h>
+#include "jam.h"
+#include "lists.h"
+#include "execcmd.h"
+#include <errno.h>
 
-# ifdef OS_MAC
+#ifdef OS_MAC
 
 /*
  * execcmd() - launch an async command execution
  */
 
-void
-execcmd( 
-	char *string,
-	void (*func)( void *closure, int status ),
-	void *closure,
-	LIST *shell )
+void execcmd(char* string, void (*func)(void* closure, int status),
+			 void* closure, LIST* shell)
 {
-	
-	printf( "%s", string );
-	(*func)( closure, EXEC_CMD_OK );
+
+	printf("%s", string);
+	(*func)(closure, EXEC_CMD_OK);
 }
 
 /*
  * execwait() - wait and drive at most one execution completion
  */
 
-int
-execwait()
+int execwait()
 {
 	return 0;
 }
 
-# endif /* OS_MAC */
+#endif /* OS_MAC */

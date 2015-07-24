@@ -10,14 +10,11 @@
  * 05/04/94 (seiwald) - async multiprocess interface
  */
 
-void execcmd(
-	char *string,
-	void (*func)( void *closure, int status ),
-	void *closure,
-	LIST *shell );
+void execcmd(char* string, void (*func)(void* closure, int status),
+			 void* closure, LIST* shell);
 
 int execwait();
 
-# define EXEC_CMD_OK	0
-# define EXEC_CMD_FAIL	1
-# define EXEC_CMD_INTR	2
+#define EXEC_CMD_OK 0
+#define EXEC_CMD_FAIL 1
+#define EXEC_CMD_INTR 2

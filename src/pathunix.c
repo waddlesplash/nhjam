@@ -33,79 +33,73 @@
  * 11/04/02 (seiwald) - const-ing for string literals
  */
 
-# include "jam.h"
-# include "pathsys.h"
+#include "jam.h"
+#include "pathsys.h"
 
-# ifdef USE_PATHUNIX
+#ifdef USE_PATHUNIX
 
-# if defined( unix )
-# include <unistd.h>
-# endif
+#if defined(unix)
+#include <unistd.h>
+#endif
 
 /*
  * path_parse() - split a file name into dir/base/suffix/member
  */
 
-void
-path_parse(
-	const char *file,
-	PATHNAME *f )
+void path_parse(const char* file, PATHNAME* f)
 {
-	const char *p, *q;
-	const char *end;
+	const char* p, *q;
+	const char* end;
 
-	memset( (char *)f, 0, sizeof( *f ) );
+	memset((char*)f, 0, sizeof(*f));
 
 	/* Look for <grist> */
 
-	if( file[0] == '<' && ( p = strchr( file, '>' ) ) )
-	{
-	    f->f_grist.ptr = file;
-	    f->f_grist.len = p - file;
-	    file = p + 1;
+	if (file[0] == '<' && (p = strchr(file, '>'))) {
+		f->f_grist.ptr = file;
+		f->f_grist.len = p - file;
+		file = p + 1;
 	}
 
 	/* Look for dir/ */
 
-	p = strrchr( file, '/' );
+	p = strrchr(file, '/');
 
-# if PATH_DELIM == '\\'
+#if PATH_DELIM == '\\'
 	/* On NT, look for dir\ as well */
 	{
-	    char *p1 = strrchr( file, '\\' );
-	    p = p1 > p ? p1 : p;
+		char* p1 = strrchr(file, '\\');
+		p = p1 > p ? p1 : p;
 	}
-# endif
+#endif
 
-	if( p )
-	{
-	    f->f_dir.ptr = file;
-	    f->f_dir.len = p - file;
+	if (p) {
+		f->f_dir.ptr = file;
+		f->f_dir.len = p - file;
 
-	    /* Special case for / - dirname is /, not "" */
+		/* Special case for / - dirname is /, not "" */
 
-	    if( !f->f_dir.len )
-		f->f_dir.len = 1;
+		if (!f->f_dir.len)
+			f->f_dir.len = 1;
 
-# if PATH_DELIM == '\\'
-	    /* Special case for D:/ - dirname is D:/, not "D:" */
+#if PATH_DELIM == '\\'
+		/* Special case for D:/ - dirname is D:/, not "D:" */
 
-	    if( f->f_dir.len == 2 && file[1] == ':' )
-		f->f_dir.len = 3;
-# endif
+		if (f->f_dir.len == 2 && file[1] == ':')
+			f->f_dir.len = 3;
+#endif
 
-	    file = p + 1;
+		file = p + 1;
 	}
 
-	end = file + strlen( file );
+	end = file + strlen(file);
 
 	/* Look for (member) */
 
-	if( ( p = strchr( file, '(' ) ) && end[-1] == ')' )
-	{
-	    f->f_member.ptr = p + 1;
-	    f->f_member.len = end - p - 2;
-	    end = p;
+	if ((p = strchr(file, '(')) && end[-1] == ')') {
+		f->f_member.ptr = p + 1;
+		f->f_member.len = end - p - 2;
+		end = p;
 	}
 
 	/* Look for .suffix */
@@ -114,14 +108,13 @@ path_parse(
 	p = 0;
 	q = file;
 
-	while( q = (char *)memchr( q, '.', end - q ) )
-	    p = q++;
+	while (q = (char*)memchr(q, '.', end - q))
+		p = q++;
 
-	if( p )
-	{
-	    f->f_suffix.ptr = p;
-	    f->f_suffix.len = end - p;
-	    end = p;
+	if (p) {
+		f->f_suffix.ptr = p;
+		f->f_suffix.len = end - p;
+		end = p;
 	}
 
 	/* Leaves base */
@@ -134,86 +127,76 @@ path_parse(
  * path_build() - build a filename given dir/base/suffix/member
  */
 
-void
-path_build(
-	PATHNAME *f,
-	char	*file,
-	int	binding )
+void path_build(PATHNAME* f, char* file, int binding)
 {
 	/* Start with the grist.  If the current grist isn't */
 	/* surrounded by <>'s, add them. */
 
-	if( f->f_grist.len )
-	{
-	    if( f->f_grist.ptr[0] != '<' ) *file++ = '<';
-	    memcpy( file, f->f_grist.ptr, f->f_grist.len );
-	    file += f->f_grist.len;
-	    if( file[-1] != '>' ) *file++ = '>';
+	if (f->f_grist.len) {
+		if (f->f_grist.ptr[0] != '<')
+			*file++ = '<';
+		memcpy(file, f->f_grist.ptr, f->f_grist.len);
+		file += f->f_grist.len;
+		if (file[-1] != '>')
+			*file++ = '>';
 	}
 
-	/* Don't prepend root if it's . or directory is rooted */
+/* Don't prepend root if it's . or directory is rooted */
 
-# if PATH_DELIM == '/'
+#if PATH_DELIM == '/'
 
-	if( f->f_root.len
-	    && !( f->f_root.len == 1 && f->f_root.ptr[0] == '.' )
-	    && !( f->f_dir.len && f->f_dir.ptr[0] == '/' ) )
+	if (f->f_root.len && !(f->f_root.len == 1 && f->f_root.ptr[0] == '.') &&
+		!(f->f_dir.len && f->f_dir.ptr[0] == '/'))
 
-# else /* unix */
+#else /* unix */
 
-	if( f->f_root.len
-	    && !( f->f_root.len == 1 && f->f_root.ptr[0] == '.' )
-	    && !( f->f_dir.len && f->f_dir.ptr[0] == '/' )
-	    && !( f->f_dir.len && f->f_dir.ptr[0] == '\\' )
-	    && !( f->f_dir.len && f->f_dir.ptr[1] == ':' ) )
+	if (f->f_root.len && !(f->f_root.len == 1 && f->f_root.ptr[0] == '.') &&
+		!(f->f_dir.len && f->f_dir.ptr[0] == '/') &&
+		!(f->f_dir.len && f->f_dir.ptr[0] == '\\') &&
+		!(f->f_dir.len && f->f_dir.ptr[1] == ':'))
 
-# endif /* unix */
+#endif /* unix */
 
 	{
-	    memcpy( file, f->f_root.ptr, f->f_root.len );
-	    file += f->f_root.len;
-	    *file++ = PATH_DELIM;
+		memcpy(file, f->f_root.ptr, f->f_root.len);
+		file += f->f_root.len;
+		*file++ = PATH_DELIM;
 	}
 
-	if( f->f_dir.len )
-	{
-	    memcpy( file, f->f_dir.ptr, f->f_dir.len );
-	    file += f->f_dir.len;
+	if (f->f_dir.len) {
+		memcpy(file, f->f_dir.ptr, f->f_dir.len);
+		file += f->f_dir.len;
 	}
 
 	/* UNIX: Put / between dir and file */
 	/* NT:   Put \ between dir and file */
 
-	if( f->f_dir.len && ( f->f_base.len || f->f_suffix.len ) )
-	{
-	    /* UNIX: Special case for dir \ : don't add another \ */
-	    /* NT:   Special case for dir / : don't add another / */
+	if (f->f_dir.len && (f->f_base.len || f->f_suffix.len)) {
+/* UNIX: Special case for dir \ : don't add another \ */
+/* NT:   Special case for dir / : don't add another / */
 
-# if PATH_DELIM == '\\'
-	    if( !( f->f_dir.len == 3 && f->f_dir.ptr[1] == ':' ) )
-# endif
-		if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == PATH_DELIM ) )
-		    *file++ = PATH_DELIM;
+#if PATH_DELIM == '\\'
+		if (!(f->f_dir.len == 3 && f->f_dir.ptr[1] == ':'))
+#endif
+			if (!(f->f_dir.len == 1 && f->f_dir.ptr[0] == PATH_DELIM))
+				*file++ = PATH_DELIM;
 	}
 
-	if( f->f_base.len )
-	{
-	    memcpy( file, f->f_base.ptr, f->f_base.len );
-	    file += f->f_base.len;
+	if (f->f_base.len) {
+		memcpy(file, f->f_base.ptr, f->f_base.len);
+		file += f->f_base.len;
 	}
 
-	if( f->f_suffix.len )
-	{
-	    memcpy( file, f->f_suffix.ptr, f->f_suffix.len );
-	    file += f->f_suffix.len;
+	if (f->f_suffix.len) {
+		memcpy(file, f->f_suffix.ptr, f->f_suffix.len);
+		file += f->f_suffix.len;
 	}
 
-	if( f->f_member.len )
-	{
-	    *file++ = '(';
-	    memcpy( file, f->f_member.ptr, f->f_member.len );
-	    file += f->f_member.len;
-	    *file++ = ')';
+	if (f->f_member.len) {
+		*file++ = '(';
+		memcpy(file, f->f_member.ptr, f->f_member.len);
+		file += f->f_member.len;
+		*file++ = ')';
 	}
 	*file = 0;
 }
@@ -222,18 +205,13 @@ path_build(
  *	path_parent() - make a PATHNAME point to its parent dir
  */
 
-void
-path_parent( PATHNAME *f )
+void path_parent(PATHNAME* f)
 {
 	/* just set everything else to nothing */
 
-	f->f_base.ptr =
-	f->f_suffix.ptr =
-	f->f_member.ptr = "";
+	f->f_base.ptr = f->f_suffix.ptr = f->f_member.ptr = "";
 
-	f->f_base.len =
-	f->f_suffix.len =
-	f->f_member.len = 0;
+	f->f_base.len = f->f_suffix.len = f->f_member.len = 0;
 }
 
 /*
@@ -244,12 +222,11 @@ path_parent( PATHNAME *f )
  *	entry. On error, or if the supplied buffer is too small, NULL is returned.
  */
 
-char *
-normalize_path(const char *path, char *buffer, size_t bufferSize)
+char* normalize_path(const char* path, char* buffer, size_t bufferSize)
 {
 	// init cwd
 	static char _cwd[PATH_MAX];
-	static char *cwd = 0;
+	static char* cwd = 0;
 	static size_t cwdLen = 0;
 	int pathLen = (path ? strlen(path) : 0);
 	int resultLen = 0;
@@ -282,8 +259,8 @@ normalize_path(const char *path, char *buffer, size_t bufferSize)
 	// components, and chopping off a component per ".."
 	while (pathLen > 0) {
 		// find component
-		char *separator = strchr(path, PATH_DELIM);
-		const char *component = path;
+		char* separator = strchr(path, PATH_DELIM);
+		const char* component = path;
 		int componentLen = 0;
 		if (separator) {
 			componentLen = separator - path;
@@ -298,10 +275,10 @@ normalize_path(const char *path, char *buffer, size_t bufferSize)
 		if (componentLen > 0) {
 			if (componentLen == 1 && component[0] == '.') {
 				// component is ".": skip
-			} else if (resolveDotDot && componentLen == 2 && component[0] == '.'
-					   && component[1] == '.') {
+			} else if (resolveDotDot && componentLen == 2 &&
+					   component[0] == '.' && component[1] == '.') {
 				// component is "..": eat the last component of the result
-				char *lastSeparator = strrchr(buffer, PATH_DELIM);
+				char* lastSeparator = strrchr(buffer, PATH_DELIM);
 				if (lastSeparator) {
 					resultLen = lastSeparator - buffer;
 					if (resultLen == 0) {
@@ -328,4 +305,4 @@ normalize_path(const char *path, char *buffer, size_t bufferSize)
 	return buffer;
 }
 
-# endif /* unix, NT, OS/2, AmigaOS */
+#endif /* unix, NT, OS/2, AmigaOS */

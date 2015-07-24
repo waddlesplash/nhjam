@@ -23,21 +23,20 @@
 //
 
 typedef struct string_list {
-	char**	strings;	// null terminated array of strings
-	int		count;		// number of strings in the array, not counting the
-						// terminating null
-	int		capacity;	// current capacity of the string array
-	int		block_size;	// granularity (number of entries) to be used for
-						// resizing the array
+	char** strings; // null terminated array of strings
+	int count;		// number of strings in the array, not counting the
+	// terminating null
+	int capacity;   // current capacity of the string array
+	int block_size; // granularity (number of entries) to be used for
+					// resizing the array
 } string_list;
 
 // string list prototypes
 static string_list* new_string_list(int block_size);
 static void delete_string_list(string_list* list);
-static int resize_string_list(string_list *list, int size);
-static int push_string(string_list *list, char *string);
-static char* pop_string(string_list *list);
-
+static int resize_string_list(string_list* list, int size);
+static int push_string(string_list* list, char* string);
+static char* pop_string(string_list* list);
 
 // file_read_line
 /*!	\brief Reads a line from the supplied file and writes it to the supplied
@@ -49,9 +48,7 @@ static char* pop_string(string_list *list);
 	\param value The pointer to where the read value shall be written.
 	\return \c ~0, if a number could be read, 0 otherwise.
 */
-static
-int
-file_read_line(FILE *file, char *buffer, int bufferSize)
+static int file_read_line(FILE* file, char* buffer, int bufferSize)
 {
 	int len;
 
@@ -76,9 +73,7 @@ file_read_line(FILE *file, char *buffer, int bufferSize)
 	\param value The pointer to where the read value shall be written.
 	\return \c ~0, if a number could be read, 0 otherwise.
 */
-static
-int
-file_read_line_long(FILE *file, long *value)
+static int file_read_line_long(FILE* file, long* value)
 {
 	char buffer[32];
 	int result;
@@ -100,11 +95,9 @@ file_read_line_long(FILE *file, long *value)
 	\return Pointer to the newly allocated string_list, or 0 when out of
 			memory.
 */
-static
-string_list*
-new_string_list(int block_size)
+static string_list* new_string_list(int block_size)
 {
-	string_list *list = (string_list*)malloc(sizeof(string_list));
+	string_list* list = (string_list*)malloc(sizeof(string_list));
 	if (list) {
 		list->strings = 0;
 		list->count = 0;
@@ -127,9 +120,7 @@ new_string_list(int block_size)
 
 	\param list The string_list to be deleted.
 */
-static
-void
-delete_string_list(string_list* list)
+static void delete_string_list(string_list* list)
 {
 	if (list) {
 		if (list->strings) {
@@ -154,20 +145,18 @@ delete_string_list(string_list* list)
 	\return \c !0, if everything went fine, 0, if an error occured (out of
 			memory).
 */
-static
-int
-resize_string_list(string_list *list, int size)
+static int resize_string_list(string_list* list, int size)
 {
 	int result = 0;
 	if (list) {
 		// capacity must be at least size + 1 and a multiple of the block size
-		int newCapacity = (size + list->block_size)
-			/ list->block_size * list->block_size;
+		int newCapacity =
+			(size + list->block_size) / list->block_size * list->block_size;
 		if (newCapacity == list->capacity)
 			result = !0;
 		else {
-			char** newStrings = (char**)realloc(list->strings,
-												newCapacity * sizeof(char*));
+			char** newStrings =
+				(char**)realloc(list->strings, newCapacity * sizeof(char*));
 			if (newStrings) {
 				result = !0;
 				list->strings = newStrings;
@@ -188,9 +177,7 @@ resize_string_list(string_list *list, int size)
 	\return \c !0, if everything went fine, 0, if an error occured (out of
 			memory).
 */
-static
-int
-push_string(string_list *list, char *string)
+static int push_string(string_list* list, char* string)
 {
 	int result = 0;
 	if (list) {
@@ -198,7 +185,7 @@ push_string(string_list *list, char *string)
 		if (result) {
 			list->strings[list->count] = string;
 			list->count++;
-			list->strings[list->count] = 0;	// null terminate
+			list->strings[list->count] = 0; // null terminate
 		}
 	}
 	return result;
@@ -214,9 +201,7 @@ push_string(string_list *list, char *string)
 	\param list The string_list.
 	\return The removed string, if everything went fine, 0 otherwise.
 */
-static
-char*
-pop_string(string_list *list)
+static char* pop_string(string_list* list)
 {
 	char* string = 0;
 	if (list && list->count > 0) {
@@ -228,24 +213,23 @@ pop_string(string_list *list)
 	return string;
 }
 
-
 ///////////////////
 // jamfile caching
 //
 
 // the jamfile cache
 typedef struct jamfile_cache {
-	struct hash*	entries;	// hash table of jcache_entrys
-	string_list*	filenames;	// entry filenames
-	char*			cache_file;	// name of the cache file
+	struct hash* entries;   // hash table of jcache_entrys
+	string_list* filenames; // entry filenames
+	char* cache_file;		// name of the cache file
 } jamfile_cache;
 
 // a cache entry for an include file
 typedef struct jcache_entry {
-	char*			filename;	// name of the file
-	time_t			time;		// time stamp of the file
-	string_list*	strings;	// contents of the file
-	int				used;		// whether this cache entry has been used
+	char* filename;		  // name of the file
+	time_t time;		  // time stamp of the file
+	string_list* strings; // contents of the file
+	int used;			  // whether this cache entry has been used
 } jcache_entry;
 
 // pointer to the jamfile cache
@@ -254,12 +238,12 @@ static jamfile_cache* jamfileCache = 0;
 // jamfile cache prototypes
 static jamfile_cache* new_jamfile_cache(void);
 static void delete_jamfile_cache(jamfile_cache* cache);
-static int init_jcache_entry(jcache_entry* entry, char *filename, time_t time,
+static int init_jcache_entry(jcache_entry* entry, char* filename, time_t time,
 							 int used);
 static void cleanup_jcache_entry(jcache_entry* entry);
 static int add_jcache_entry(jamfile_cache* cache, jcache_entry* entry);
 static jcache_entry* find_jcache_entry(jamfile_cache* cache, char* filename);
-static string_list* read_file(const char *filename, string_list* list);
+static string_list* read_file(const char* filename, string_list* list);
 static int read_jcache(jamfile_cache* cache, char* filename);
 static int write_jcache(jamfile_cache* cache);
 static char* jcache_name(void);
@@ -270,11 +254,9 @@ static jamfile_cache* get_jcache(void);
 	\return A pointer to the newly allocated jamfile_cache, or 0, if out of
 			memory.
 */
-static
-jamfile_cache*
-new_jamfile_cache(void)
+static jamfile_cache* new_jamfile_cache(void)
 {
-	jamfile_cache *cache = (jamfile_cache*)malloc(sizeof(jamfile_cache));
+	jamfile_cache* cache = (jamfile_cache*)malloc(sizeof(jamfile_cache));
 	if (cache) {
 		cache->entries = hashinit(sizeof(jcache_entry), "jcache");
 		cache->filenames = new_string_list(100);
@@ -291,9 +273,7 @@ new_jamfile_cache(void)
 /*!	\brief Deletes a jamfile_cache formerly allocated with new_jamfile_cache.
 	\param cache The jamfile_cache to be deleted.
 */
-static
-void
-delete_jamfile_cache(jamfile_cache* cache)
+static void delete_jamfile_cache(jamfile_cache* cache)
 {
 	if (cache) {
 		if (cache->entries)
@@ -313,9 +293,8 @@ delete_jamfile_cache(jamfile_cache* cache)
 	\return \c !0, if everything went fine, 0, if an error occured (out of
 			memory).
 */
-static
-int
-init_jcache_entry(jcache_entry* entry, char *filename, time_t time, int used)
+static int init_jcache_entry(jcache_entry* entry, char* filename, time_t time,
+							 int used)
 {
 	int result = 0;
 	if (entry) {
@@ -343,9 +322,7 @@ init_jcache_entry(jcache_entry* entry, char *filename, time_t time, int used)
 
 	\param entry The jcache_entry to be de-initialized.
 */
-static
-void
-cleanup_jcache_entry(jcache_entry* entry)
+static void cleanup_jcache_entry(jcache_entry* entry)
 {
 	if (entry) {
 		if (entry->filename)
@@ -362,9 +339,7 @@ cleanup_jcache_entry(jcache_entry* entry)
 	\return \c !0, if everything went fine, 0, if an error occured (out of
 			memory).
 */
-static
-int
-add_jcache_entry(jamfile_cache* cache, jcache_entry* entry)
+static int add_jcache_entry(jamfile_cache* cache, jcache_entry* entry)
 {
 	int result = 0;
 	if (cache && entry) {
@@ -382,13 +357,11 @@ add_jcache_entry(jamfile_cache* cache, jcache_entry* entry)
 /*!	\brief Looks up jcache_entry in a jamfile_cache.
 	\param cache The jamfile_cache.
 	\param filename The name of the include file for whose jcache_entry shall
-	 	   be retrieved.
+		   be retrieved.
 	\return A pointer to the found jcache_entry, or 0, if the cache does not
 			contain an entry for the specified filename.
 */
-static
-jcache_entry*
-find_jcache_entry(jamfile_cache* cache, char* filename)
+static jcache_entry* find_jcache_entry(jamfile_cache* cache, char* filename)
 {
 	jcache_entry _entry;
 	jcache_entry* entry = &_entry;
@@ -412,23 +385,21 @@ find_jcache_entry(jamfile_cache* cache, char* filename)
 	\return A pointer to the string_list containing the contents of the file,
 			or 0, if an error occured.
 */
-static
-string_list*
-read_file(const char *filename, string_list* list)
+static string_list* read_file(const char* filename, string_list* list)
 {
 	int result = 0;
-	FILE *file = 0;
-	string_list *allocatedList = 0;
+	FILE* file = 0;
+	string_list* allocatedList = 0;
 	// open file
-	if ((file = fopen(filename, "r")) != 0
-		&& (list || (list = allocatedList = new_string_list(100)) != 0)) {
+	if ((file = fopen(filename, "r")) != 0 &&
+		(list || (list = allocatedList = new_string_list(100)) != 0)) {
 		// read the file
 		char buffer[513];
 		result = !0;
 		while (result && fgets(buffer, sizeof(buffer) - 1, file)) {
 			char* line = buffer;
 			int len = 0;
-			char *string = 0;
+			char* string = 0;
 			// skip leading white spaces
 			while (*line == ' ' || *line == '\t' || *line == '\n')
 				line++;
@@ -446,7 +417,7 @@ read_file(const char *filename, string_list* list)
 			}
 			if ((size_t)len + 1 == sizeof(buffer)) {
 				fprintf(stderr, "error: %s:%d: line too long!\n", filename,
-					list->count + 1);
+						list->count + 1);
 				exit(1);
 			}
 			// copy it
@@ -480,14 +451,12 @@ read_file(const char *filename, string_list* list)
 	\param filename The name of the file containing the cache to be read.
 	\return \c !0, if everything went fine, 0, if an error occured.
 */
-static
-int
-read_jcache(jamfile_cache* cache, char* filename)
+static int read_jcache(jamfile_cache* cache, char* filename)
 {
 	int result = 0;
 	if (cache && filename) {
 		// open file
-		FILE *file = 0;
+		FILE* file = 0;
 		cache->cache_file = filename;
 		if ((file = fopen(filename, "r")) != 0) {
 			// read the file
@@ -502,18 +471,17 @@ read_jcache(jamfile_cache* cache, char* filename)
 				char entryname[PATH_MAX];
 				long lineCount = 0;
 				time_t time = 0;
-				jcache_entry entry = { 0, 0, 0 };
+				jcache_entry entry = {0, 0, 0};
 				// entry name, time and line count
-				if (file_read_line(file, entryname, sizeof(entryname))
-					&& strlen(entryname) > 0
-					&& file_read_line_long(file, &time)
-					&& file_read_line_long(file, &lineCount)
-					&& (init_jcache_entry(&entry, entryname, time, 0)) != 0) {
+				if (file_read_line(file, entryname, sizeof(entryname)) &&
+					strlen(entryname) > 0 && file_read_line_long(file, &time) &&
+					file_read_line_long(file, &lineCount) &&
+					(init_jcache_entry(&entry, entryname, time, 0)) != 0) {
 					// read the lines
 					int j;
 					for (j = 0; result && j < lineCount; j++) {
 						if (fgets(buffer, sizeof(buffer), file)) {
-							char *string = (char*)malloc(strlen(buffer) + 1);
+							char* string = (char*)malloc(strlen(buffer) + 1);
 							if (string) {
 								strcpy(string, buffer);
 								result = push_string(entry.strings, string);
@@ -521,13 +489,13 @@ read_jcache(jamfile_cache* cache, char* filename)
 								result = 0;
 						} else {
 							fprintf(stderr, "warning: Invalid jamfile cache: "
-								"Unexpected end of file.\n");
+											"Unexpected end of file.\n");
 							result = 0;
 						}
 					}
 				} else {
 					fprintf(stderr, "warning: Invalid jamfile cache: "
-						"Failed to read file info.\n");
+									"Failed to read file info.\n");
 					result = 0;
 				}
 				if (result) {
@@ -554,14 +522,12 @@ read_jcache(jamfile_cache* cache, char* filename)
 	\param filename The name of the file the cache shall be stored in.
 	\return \c !0, if everything went fine, 0, if an error occured.
 */
-static
-int
-write_jcache(jamfile_cache* cache)
+static int write_jcache(jamfile_cache* cache)
 {
 	int result = 0;
 	if (cache && cache->cache_file) {
 		// open file
-		FILE *file = 0;
+		FILE* file = 0;
 		if ((file = fopen(cache->cache_file, "w")) != 0) {
 			int count = cache->filenames->count;
 			int i;
@@ -576,9 +542,9 @@ write_jcache(jamfile_cache* cache)
 					result = 0;
 				} else if (!entry->strings || !entry->used) {
 					// just skip the entry, if it is not loaded or not used
-				} else if (fprintf(file, "%s\n", entryname) > 0
-					&& (fprintf(file, "%ld\n", entry->time) > 0)
-					&& (fprintf(file, "%d\n", entry->strings->count) > 0)) {
+				} else if (fprintf(file, "%s\n", entryname) > 0 &&
+						   (fprintf(file, "%ld\n", entry->time) > 0) &&
+						   (fprintf(file, "%d\n", entry->strings->count) > 0)) {
 					int j;
 					// the lines
 					for (j = 0; result && j < entry->strings->count; j++) {
@@ -604,20 +570,18 @@ write_jcache(jamfile_cache* cache)
 	\return A pointer to the jamfile cache file, or 0, if the jam variable is
 			not set yet, or an error occured.
 */
-static
-char*
-jcache_name(void)
+static char* jcache_name(void)
 {
 	static char* name = 0;
 	if (!name) {
-		LIST *jcachevar = var_get("JCACHEFILE");
+		LIST* jcachevar = var_get("JCACHEFILE");
 
 		if (jcachevar) {
-			TARGET *t = bindtarget( jcachevar->string );
+			TARGET* t = bindtarget(jcachevar->string);
 
-			pushsettings( t->settings );
-			t->boundname = search( t->name, &t->time );
-			popsettings( t->settings );
+			pushsettings(t->settings);
+			t->boundname = search(t->name, &t->time);
+			popsettings(t->settings);
 
 			if (t->boundname) {
 				name = (char*)copystr(t->boundname);
@@ -634,9 +598,7 @@ jcache_name(void)
 
 	\return A pointer to the global jamfile_cache, or 0, if an error occured.
 */
-static
-jamfile_cache*
-get_jcache(void)
+static jamfile_cache* get_jcache(void)
 {
 	if (!jamfileCache)
 		jamfileCache = new_jamfile_cache();
@@ -659,12 +621,12 @@ get_jcache(void)
 
 				for (i = 0; i < count; i++) {
 					char* entryname = jamfileCache->filenames->strings[i];
-					jcache_entry* entry = find_jcache_entry(jamfileCache,
-						entryname);
+					jcache_entry* entry =
+						find_jcache_entry(jamfileCache, entryname);
 					if (entry->used) {
 						jcache_entry newEntry;
 						if (!init_jcache_entry(&newEntry, entryname,
-								entry->time, entry->used)) {
+											   entry->time, entry->used)) {
 							fprintf(stderr, "Out of memory!\n");
 							exit(1);
 						}
@@ -695,8 +657,7 @@ get_jcache(void)
 	Does nothing currently. The global jamfile_cache is lazy-allocated by
 	get_jcache().
 */
-void
-jcache_init(void)
+void jcache_init(void)
 {
 }
 
@@ -705,8 +666,7 @@ jcache_init(void)
 
 	Writes the cache to the specified cache file.
 */
-void
-jcache_done(void)
+void jcache_done(void)
 {
 	jamfile_cache* cache = get_jcache();
 	if (cache) {
@@ -730,18 +690,17 @@ jcache_done(void)
 	\return A pointer to a null terminated string array representing the
 			contents of the specified file, or 0, if an error occured.
 */
-char**
-jcache(char *_filename)
+char** jcache(char* _filename)
 {
 	char** strings = 0;
 	jamfile_cache* cache = get_jcache();
 	time_t time;
 	// normalize the filename
-    char _normalizedPath[PATH_MAX];
-    char *filename = normalize_path(_filename, _normalizedPath,
-    	sizeof(_normalizedPath));
-    if (!filename)
-    	filename = _filename;
+	char _normalizedPath[PATH_MAX];
+	char* filename =
+		normalize_path(_filename, _normalizedPath, sizeof(_normalizedPath));
+	if (!filename)
+		filename = _filename;
 	// get file time
 	if (!cache)
 		return 0;
@@ -779,4 +738,4 @@ jcache(char *_filename)
 	return strings;
 }
 
-#endif	// OPT_JAMFILE_CACHE_EXT
+#endif // OPT_JAMFILE_CACHE_EXT

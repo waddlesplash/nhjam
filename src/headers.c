@@ -7,10 +7,10 @@
 /*
  * headers.c - handle #includes in source files
  *
- * Using regular expressions provided as the variable $(HDRSCAN), 
+ * Using regular expressions provided as the variable $(HDRSCAN),
  * headers() searches a file for #include files and phonies up a
  * rule invocation:
- * 
+ *
  *	$(HDRRULE) <target> : <include files> ;
  *
  * External routines:
@@ -29,66 +29,63 @@
  * 12/09/02 (seiwald) - push regexp creation down to headers1().
  */
 
-# include "jam.h"
-# include "lists.h"
-# include "parse.h"
-# include "compile.h"
-# include "rules.h"
-# include "variable.h"
-# include "regexp.h"
-# include "headers.h"
-# include "newstr.h"
+#include "jam.h"
+#include "lists.h"
+#include "parse.h"
+#include "compile.h"
+#include "rules.h"
+#include "variable.h"
+#include "regexp.h"
+#include "headers.h"
+#include "newstr.h"
 
 #ifdef OPT_HEADER_CACHE_EXT
-# include "hcache.h"
+#include "hcache.h"
 #endif
 
 #ifndef OPT_HEADER_CACHE_EXT
-static LIST *headers1( const char *file, LIST *hdrscan );
+static LIST* headers1(const char* file, LIST* hdrscan);
 #endif
 
 /*
  * headers() - scan a target for include files and call HDRRULE
  */
 
-# define MAXINC 10
+#define MAXINC 10
 
-void
-headers( TARGET *t )
+void headers(TARGET* t)
 {
-	LIST	*hdrscan;
-	LIST	*hdrrule;
-	LIST	*hdrcache;
-	LOL	lol;
+	LIST* hdrscan;
+	LIST* hdrrule;
+	LIST* hdrcache;
+	LOL lol;
 
-	if( !( hdrscan = var_get( "HDRSCAN" ) ) || 
-	    !( hdrrule = var_get( "HDRRULE" ) ) )
-	        return;
+	if (!(hdrscan = var_get("HDRSCAN")) || !(hdrrule = var_get("HDRRULE")))
+		return;
 
 	/* Doctor up call to HDRRULE rule */
 	/* Call headers1() to get LIST of included files. */
 
-	if( DEBUG_HEADER )
-	    printf( "header scan %s\n", t->name );
+	if (DEBUG_HEADER)
+		printf("header scan %s\n", t->name);
 
-	lol_init( &lol );
+	lol_init(&lol);
 
-	lol_add( &lol, list_new( L0, t->name, 1 ) );
+	lol_add(&lol, list_new(L0, t->name, 1));
 #ifdef OPT_HEADER_CACHE_EXT
-	lol_add( &lol, hcache( t, hdrscan ) );
+	lol_add(&lol, hcache(t, hdrscan));
 #else
-	lol_add( &lol, headers1( t->boundname, hdrscan ) );
+	lol_add(&lol, headers1(t->boundname, hdrscan));
 #endif
 
-	if( lol_get( &lol, 1 ) )
-	{
-	    int jmp = JMP_NONE;
-	    list_free( evaluate_rule( hdrrule->string, &lol, L0, &jmp ) );
+	if (lol_get(&lol, 1)) {
+		int jmp = JMP_NONE;
+		list_free(evaluate_rule(hdrrule->string, &lol, L0, &jmp));
 	}
 
 	/* Clean up */
 
-	lol_free( &lol );
+	lol_free(&lol);
 }
 
 /*
@@ -98,50 +95,47 @@ headers( TARGET *t )
 #ifdef OPT_HEADER_CACHE_EXT
 LIST *
 #else
-static LIST *
+static LIST*
 #endif
 headers1( 
 	const char *file,
 	LIST *hdrscan )
 {
-	FILE	*f;
-	int	i;
-	int	rec = 0;
-	LIST	*result = 0;
-	regexp	*re[ MAXINC ];
-	char	buf[ 1024 ];
+	FILE* f;
+	int i;
+	int rec = 0;
+	LIST* result = 0;
+	regexp* re[MAXINC];
+	char buf[1024];
 
-	if( !( f = fopen( file, "r" ) ) )
-	    return result;
+	if (!(f = fopen(file, "r")))
+		return result;
 
-	while( rec < MAXINC && hdrscan )
-	{
-	    re[rec++] = regcomp( hdrscan->string );
-	    hdrscan = list_next( hdrscan );
+	while (rec < MAXINC && hdrscan) {
+		re[rec++] = regcomp(hdrscan->string);
+		hdrscan = list_next(hdrscan);
 	}
 
-	while( fgets( buf, sizeof( buf ), f ) )
-	{
-	    for( i = 0; i < rec; i++ )
-		if( regexec( re[i], buf ) && re[i]->startp[1] )
-	    {
-		/* Copy and terminate extracted string. */
+	while (fgets(buf, sizeof(buf), f)) {
+		for (i = 0; i < rec; i++)
+			if (regexec(re[i], buf) && re[i]->startp[1]) {
+				/* Copy and terminate extracted string. */
 
-		char buf2[ MAXSYM ];
-		int l = re[i]->endp[1] - re[i]->startp[1];
-		memcpy( buf2, re[i]->startp[1], l );
-		buf2[ l ] = 0;
-		result = list_new( result, buf2, 0 );
+				char buf2[MAXSYM];
+				int l = re[i]->endp[1] - re[i]->startp[1];
+				memcpy(buf2, re[i]->startp[1], l);
+				buf2[l] = 0;
+				result = list_new(result, buf2, 0);
 
-		if( DEBUG_HEADER )
-		    printf( "header found: %s\n", buf2 );
-	    }
+				if (DEBUG_HEADER)
+					printf("header found: %s\n", buf2);
+			}
 	}
 
-	while( rec )
-	    free( (char *)re[--rec] );
+	while (rec)
+		free((char*)re[--rec]);
 
-	fclose( f );
+	fclose(f);
 
 	return result;
 }

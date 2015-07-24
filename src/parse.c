@@ -15,17 +15,16 @@
  * 11/04/02 (seiwald) - const-ing for string literals
  */
 
-# include "jam.h"
-# include "lists.h"
-# include "parse.h"
-# include "scan.h"
-# include "newstr.h"
-# include "compile.h"
+#include "jam.h"
+#include "lists.h"
+#include "parse.h"
+#include "scan.h"
+#include "newstr.h"
+#include "compile.h"
 
-static PARSE *yypsave;
+static PARSE* yypsave;
 
-void
-parse_file( const char *f )
+void parse_file(const char* f)
 {
 	/* Suspend scan of current file */
 	/* and push this new file in the stream */
@@ -36,53 +35,45 @@ parse_file( const char *f )
 	/* Execute it outside of the parser so that recursive */
 	/* calls to yyrun() work (no recursive yyparse's). */
 
-	for(;;)
-	{
-	    LOL l;
-	    PARSE *p;
-	    int jmp = 0; /* JMP_NONE */
+	for (;;) {
+		LOL l;
+		PARSE* p;
+		int jmp = 0; /* JMP_NONE */
 
-	    /* $(<) and $(>) empty in outer scope. */
+		/* $(<) and $(>) empty in outer scope. */
 
-	    lol_init( &l );
+		lol_init(&l);
 
-	    /* Filled by yyparse() calling parse_save() */
+		/* Filled by yyparse() calling parse_save() */
 
-	    yypsave = 0;
+		yypsave = 0;
 
-	    /* If parse error or empty parse, outta here */
+		/* If parse error or empty parse, outta here */
 
-	    if( yyparse() || !( p = yypsave ) )
-		break;
+		if (yyparse() || !(p = yypsave))
+			break;
 
-	    /* Run the parse tree. */
+		/* Run the parse tree. */
 
-	    list_free( (*(p->func))( p, &l, &jmp ) );
+		list_free((*(p->func))(p, &l, &jmp));
 
-	    parse_free( p );
+		parse_free(p);
 
-	    if ( jmp == JMP_EOF )
-		break;
+		if (jmp == JMP_EOF)
+			break;
 	}
 }
 
-void
-parse_save( PARSE *p )
+void parse_save(PARSE* p)
 {
 	yypsave = p;
 }
 
-PARSE *
-parse_make( 
-	LIST		*(*func)( PARSE *p, LOL *args, int *jmp ),
-	PARSE		*left,
-	PARSE		*right,
-	PARSE		*third,
-	const char 	*string,
-	const char 	*string1,
-	int		num )
+PARSE* parse_make(LIST* (*func)(PARSE* p, LOL* args, int* jmp), PARSE* left,
+				  PARSE* right, PARSE* third, const char* string,
+				  const char* string1, int num)
 {
-	PARSE	*p = (PARSE *)malloc( sizeof( PARSE ) );
+	PARSE* p = (PARSE*)malloc(sizeof(PARSE));
 
 	p->func = func;
 	p->left = left;
@@ -96,28 +87,26 @@ parse_make(
 	return p;
 }
 
-void
-parse_refer( PARSE *p )
+void parse_refer(PARSE* p)
 {
 	++p->refs;
 }
 
-void
-parse_free( PARSE *p )
+void parse_free(PARSE* p)
 {
-	if( --p->refs )
-	    return;
+	if (--p->refs)
+		return;
 
-	if( p->string )
-	    freestr( p->string );
-	if( p->string1 )
-	    freestr( p->string1 );
-	if( p->left )
-	    parse_free( p->left );
-	if( p->right )
-	    parse_free( p->right );
-	if( p->third )
-	    parse_free( p->third );
-	
-	free( (char *)p );
+	if (p->string)
+		freestr(p->string);
+	if (p->string1)
+		freestr(p->string1);
+	if (p->left)
+		parse_free(p->left);
+	if (p->right)
+		parse_free(p->right);
+	if (p->third)
+		parse_free(p->third);
+
+	free((char*)p);
 }

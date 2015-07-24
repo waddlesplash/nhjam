@@ -101,235 +101,241 @@
  * 11/04/02 (seiwald) - const-ing for string literals
  */
 
-# include "jam.h"
-# include "option.h"
-# include "patchlevel.h"
+#include "jam.h"
+#include "option.h"
+#include "patchlevel.h"
 
 /* These get various function declarations. */
 
-# include "lists.h"
-# include "parse.h"
-# include "variable.h"
-# include "compile.h"
-# include "builtins.h"
-# include "jcache.h"
-# include "rules.h"
-# include "newstr.h"
-# include "scan.h"
-# include "timestamp.h"
-# include "make.h"
+#include "lists.h"
+#include "parse.h"
+#include "variable.h"
+#include "compile.h"
+#include "builtins.h"
+#include "jcache.h"
+#include "rules.h"
+#include "newstr.h"
+#include "scan.h"
+#include "timestamp.h"
+#include "make.h"
 
 /* Macintosh is "special" */
 
-# ifdef OS_MAC
-# include <QuickDraw.h>
-# endif
+#ifdef OS_MAC
+#include <QuickDraw.h>
+#endif
 
 /* And UNIX for this */
 
-# ifdef unix
-# include <sys/utsname.h>
-# endif
+#ifdef unix
+#include <sys/utsname.h>
+#endif
 
 struct globs globs = {
-	0,			/* noexec */
-	1,			/* jobs */
-	0,			/* quitquick */
-	0,			/* newestfirst */
-# ifdef OS_MAC
-	{ 0 },			/* display - suppress actions output */
-# else
-	{ 0, 1 }, 		/* display actions  */
-# endif
-	0			/* output commands, not run them */
-} ;
+	0, /* noexec */
+	1, /* jobs */
+	0, /* quitquick */
+	0, /* newestfirst */
+#ifdef OS_MAC
+	{0}, /* display - suppress actions output */
+#else
+	{0, 1}, /* display actions  */
+#endif
+	0 /* output commands, not run them */
+};
 
 /* Symbols to be defined as true for use in Jambase */
 
-static const char *othersyms[] = { OSMAJOR, OSMINOR, OSPLAT, JAMVERSYM, 0 } ;
+static const char* othersyms[] = {OSMAJOR, OSMINOR, OSPLAT, JAMVERSYM, 0};
 
 /* Known for sure:
  *	mac needs arg_enviro
  *	OS2 needs extern environ
  */
 
-# ifdef OS_MAC
-# define use_environ arg_environ
-# ifdef MPW
+#ifdef OS_MAC
+#define use_environ arg_environ
+#ifdef MPW
 QDGlobals qd;
-# endif
-# endif
+#endif
+#endif
 
-# ifndef use_environ
-# define use_environ environ
-# if !defined( __WATCOM__ ) && !defined( OS_OS2 ) && !defined( OS_NT )
-extern char **environ;
-# endif
-# endif
+#ifndef use_environ
+#define use_environ environ
+#if !defined(__WATCOM__) && !defined(OS_OS2) && !defined(OS_NT)
+extern char** environ;
+#endif
+#endif
 
-main( int argc, char **argv, char **arg_environ )
+main(int argc, char** argv, char** arg_environ)
 {
-	int		n;
-	const char	*s;
-	struct option	optv[N_OPTS];
-	const char	*all = "all";
-	int		anyhow = 0;
-	int		status;
+	int n;
+	const char* s;
+	struct option optv[N_OPTS];
+	const char* all = "all";
+	int anyhow = 0;
+	int status;
 
-# ifdef OS_MAC
+#ifdef OS_MAC
 	InitGraf(&qd.thePort);
-# endif
+#endif
 
 	argc--, argv++;
 
-	if( ( n = getoptions( argc, argv, "d:j:f:gs:t:ano:qv", optv ) ) < 0 )
-	{
-	    printf( "\nusage: jam [ options ] targets...\n\n" );
+	if ((n = getoptions(argc, argv, "d:j:f:gs:t:ano:qv", optv)) < 0) {
+		printf("\nusage: jam [ options ] targets...\n\n");
 
-            printf( "-a      Build all targets, even if they are current.\n" );
-            printf( "-dx     Display (a)actions (c)causes (d)dependencies\n" );
-	    printf( "        (m)make tree (x)commands (0-9) debug levels.\n" );
-# ifdef OPT_RULE_PROFILING_EXT
-	    printf( "        (p)profile rules.\n" );
-# endif
-            printf( "-fx     Read x instead of Jambase.\n" );
-	    printf( "-g      Build from newest sources first.\n" );
-            printf( "-jx     Run up to x shell commands concurrently.\n" );
-            printf( "-n      Don't actually execute the updating actions.\n" );
-            printf( "-ox     Write the updating actions to file x.\n" );
-            printf( "-q      Quit quickly as soon as a target fails.\n" );
-	    printf( "-sx=y   Set variable x=y, overriding environment.\n" );
-            printf( "-tx     Rebuild x, even if it is up-to-date.\n" );
-            printf( "-v      Print the version of jam and exit.\n\n" );
+		printf("-a      Build all targets, even if they are current.\n");
+		printf("-dx     Display (a)actions (c)causes (d)dependencies\n");
+		printf("        (m)make tree (x)commands (0-9) debug levels.\n");
+#ifdef OPT_RULE_PROFILING_EXT
+		printf("        (p)profile rules.\n");
+#endif
+		printf("-fx     Read x instead of Jambase.\n");
+		printf("-g      Build from newest sources first.\n");
+		printf("-jx     Run up to x shell commands concurrently.\n");
+		printf("-n      Don't actually execute the updating actions.\n");
+		printf("-ox     Write the updating actions to file x.\n");
+		printf("-q      Quit quickly as soon as a target fails.\n");
+		printf("-sx=y   Set variable x=y, overriding environment.\n");
+		printf("-tx     Rebuild x, even if it is up-to-date.\n");
+		printf("-v      Print the version of jam and exit.\n\n");
 
-	    exit( EXITBAD );
+		exit(EXITBAD);
 	}
 
 	argc -= n, argv += n;
 
 	/* Version info. */
 
-	if( ( s = getoptval( optv, 'v', 0 ) ) )
-	{
-	    printf( "Jam %s. %s. ", VERSION, OSMINOR );
-	    printf( "Copyright 1993-2002 Christopher Seiwald.\n" );
+	if ((s = getoptval(optv, 'v', 0))) {
+		printf("Jam %s. %s. ", VERSION, OSMINOR);
+		printf("Copyright 1993-2002 Christopher Seiwald.\n");
 
-	    return EXITOK;
+		return EXITOK;
 	}
 
 	/* Pick up interesting options */
 
-	if( ( s = getoptval( optv, 'n', 0 ) ) )
-	    globs.noexec++, DEBUG_MAKE = DEBUG_MAKEQ = DEBUG_EXEC = 1;
+	if ((s = getoptval(optv, 'n', 0)))
+		globs.noexec++, DEBUG_MAKE = DEBUG_MAKEQ = DEBUG_EXEC = 1;
 
-	if( ( s = getoptval( optv, 'q', 0 ) ) )
-	    globs.quitquick = 1;
+	if ((s = getoptval(optv, 'q', 0)))
+		globs.quitquick = 1;
 
-	if( ( s = getoptval( optv, 'a', 0 ) ) )
-	    anyhow++;
+	if ((s = getoptval(optv, 'a', 0)))
+		anyhow++;
 
-	if( ( s = getoptval( optv, 'j', 0 ) ) )
-	{
-	    globs.jobs = atoi( s );
-	    var_set( "JAMJOBS", list_new( L0, s, 0 ), VAR_SET );
+	if ((s = getoptval(optv, 'j', 0))) {
+		globs.jobs = atoi(s);
+		var_set("JAMJOBS", list_new(L0, s, 0), VAR_SET);
 	}
 
-	if( ( s = getoptval( optv, 'g', 0 ) ) )
-	    globs.newestfirst = 1;
+	if ((s = getoptval(optv, 'g', 0)))
+		globs.newestfirst = 1;
 
 	/* Turn on/off debugging */
 
-	for( n = 0; s = getoptval( optv, 'd', n ); n++ )
-	{
-	    int i = atoi( s );
+	for (n = 0; s = getoptval(optv, 'd', n); n++) {
+		int i = atoi(s);
 
-	    /* First -d, turn off defaults. */
+		/* First -d, turn off defaults. */
 
-	    if( !n )
-		DEBUG_MAKE = DEBUG_MAKEQ = DEBUG_EXEC = 0;
+		if (!n)
+			DEBUG_MAKE = DEBUG_MAKEQ = DEBUG_EXEC = 0;
 
-	    /* n turns on levels 1-n */
-	    /* +n turns on level n */
-	    /* c turns on named display c */
+		/* n turns on levels 1-n */
+		/* +n turns on level n */
+		/* c turns on named display c */
 
-	    if( i < 0 || i >= DEBUG_MAX )
-	    {
-		printf( "Invalid debug level '%s'.\n", s );
-	    }
-	    else if( *s == '+' )
-	    {
-		globs.debug[i] = 1;
-	    }
-	    else if( i ) while( i )
-	    {
-		globs.debug[i--] = 1;
-	    }
-	    else while( *s ) switch( *s++ )
-	    {
-	    case 'a': DEBUG_MAKE = DEBUG_MAKEQ = 1; break;
-	    case 'c': DEBUG_CAUSES = 1; break;
-	    case 'd': DEBUG_DEPENDS = 1; break;
-	    case 'm': DEBUG_MAKEPROG = 1; break;
-	    case 'x': DEBUG_EXEC = 1; break;
-# ifdef OPT_RULE_PROFILING_EXT
-	    case 'p': DEBUG_PROFILE_RULES = 1; break;
-# endif
-	    case '0': break;
-	    default: printf( "Invalid debug flag '%c'.\n", s[-1] );
-	    }
+		if (i < 0 || i >= DEBUG_MAX) {
+			printf("Invalid debug level '%s'.\n", s);
+		} else if (*s == '+') {
+			globs.debug[i] = 1;
+		} else if (i)
+			while (i) {
+				globs.debug[i--] = 1;
+			}
+		else
+			while (*s)
+				switch (*s++) {
+				case 'a':
+					DEBUG_MAKE = DEBUG_MAKEQ = 1;
+					break;
+				case 'c':
+					DEBUG_CAUSES = 1;
+					break;
+				case 'd':
+					DEBUG_DEPENDS = 1;
+					break;
+				case 'm':
+					DEBUG_MAKEPROG = 1;
+					break;
+				case 'x':
+					DEBUG_EXEC = 1;
+					break;
+#ifdef OPT_RULE_PROFILING_EXT
+				case 'p':
+					DEBUG_PROFILE_RULES = 1;
+					break;
+#endif
+				case '0':
+					break;
+				default:
+					printf("Invalid debug flag '%c'.\n", s[-1]);
+				}
 	}
 
 	/* Set JAMDATE first */
 
 	{
-	    char buf[ 128 ];
-	    time_t clock;
-	    time( &clock );
-	    strcpy( buf, ctime( &clock ) );
+		char buf[128];
+		time_t clock;
+		time(&clock);
+		strcpy(buf, ctime(&clock));
 
-	    /* Trim newline from date */
+		/* Trim newline from date */
 
-	    if( strlen( buf ) == 25 )
-		buf[ 24 ] = 0;
+		if (strlen(buf) == 25)
+			buf[24] = 0;
 
-	    var_set( "JAMDATE", list_new( L0, buf, 0 ), VAR_SET );
+		var_set("JAMDATE", list_new(L0, buf, 0), VAR_SET);
 	}
 
-	/* And JAMUNAME */
-# ifdef unix
+/* And JAMUNAME */
+#ifdef unix
 	{
-	    struct utsname u;
+		struct utsname u;
 
-	    if( uname( &u ) >= 0 )
-	    {
-		LIST *l = L0;
-		l = list_new( l, u.machine, 0 );
-		l = list_new( l, u.version, 0 );
-		l = list_new( l, u.release, 0 );
-		l = list_new( l, u.nodename, 0 );
-		l = list_new( l, u.sysname, 0 );
-		var_set( "JAMUNAME", l, VAR_SET );
-	    }
+		if (uname(&u) >= 0) {
+			LIST* l = L0;
+			l = list_new(l, u.machine, 0);
+			l = list_new(l, u.version, 0);
+			l = list_new(l, u.release, 0);
+			l = list_new(l, u.nodename, 0);
+			l = list_new(l, u.sysname, 0);
+			var_set("JAMUNAME", l, VAR_SET);
+		}
 	}
-# endif /* unix */
+#endif /* unix */
 
 	/*
 	 * Jam defined variables OS, OSPLAT
 	 */
 
-	var_defines( othersyms );
+	var_defines(othersyms);
 
 	/* load up environment variables */
 
-	var_defines( (const char **)use_environ );
+	var_defines((const char**)use_environ);
 
 #ifdef OPT_JAM_TARGETS_VARIABLE_EXT
 	/* define the variable JAM_TARGETS containing the targets specified on
 	   the command line */
 	{
-		LIST *l = L0;
+		LIST* l = L0;
 		int i;
-		char **targets = argv;
+		char** targets = argv;
 		int targetCount = argc;
 		if (targetCount == 0) {
 			targets = (char**)&all;
@@ -337,36 +343,35 @@ main( int argc, char **argv, char **arg_environ )
 		}
 
 		for (i = 0; i < targetCount; i++)
-			l = list_new( l, targets[i], 0 );
+			l = list_new(l, targets[i], 0);
 
-		var_set( "JAM_TARGETS", l, VAR_SET );
+		var_set("JAM_TARGETS", l, VAR_SET);
 	}
 #endif
 
 	/* Load up variables set on command line. */
 
-	for( n = 0; s = getoptval( optv, 's', n ); n++ )
-	{
-	    const char *symv[2];
-	    symv[0] = s;
-	    symv[1] = 0;
-	    var_defines( symv );
+	for (n = 0; s = getoptval(optv, 's', n); n++) {
+		const char* symv[2];
+		symv[0] = s;
+		symv[1] = 0;
+		var_defines(symv);
 	}
 
 	/* Initialize built-in rules */
 
 	load_builtins();
 
-	/* Parse ruleset */
+/* Parse ruleset */
 #ifdef OPT_JAMFILE_CACHE_EXT
 	jcache_init();
 #endif
 
-	for( n = 0; s = getoptval( optv, 'f', n ); n++ )
-	    parse_file( s );
+	for (n = 0; s = getoptval(optv, 'f', n); n++)
+		parse_file(s);
 
-	if( !n )
-	    parse_file( "+" );
+	if (!n)
+		parse_file("+");
 
 #ifdef OPT_JAMFILE_CACHE_EXT
 	jcache_done();
@@ -376,38 +381,36 @@ main( int argc, char **argv, char **arg_environ )
 
 	/* Manually touch -t targets */
 
-	for( n = 0; s = getoptval( optv, 't', n ); n++ )
-	    touchtarget( s );
+	for (n = 0; s = getoptval(optv, 't', n); n++)
+		touchtarget(s);
 
 	/* If an output file is specified, set globs.cmdout to that */
 
-	if( s = getoptval( optv, 'o', 0 ) )
-	{
-	    if( !( globs.cmdout = fopen( s, "w" ) ) )
-	    {
-		printf( "Failed to write to '%s'\n", s );
-		exit( EXITBAD );
-	    }
-	    globs.noexec++;
+	if (s = getoptval(optv, 'o', 0)) {
+		if (!(globs.cmdout = fopen(s, "w"))) {
+			printf("Failed to write to '%s'\n", s);
+			exit(EXITBAD);
+		}
+		globs.noexec++;
 	}
 
 #ifdef OPT_JAM_TARGETS_VARIABLE_EXT
 	/* get value of variable JAM_TARGETS and build the targets */
 	{
-		LIST *l = var_get( "JAM_TARGETS" );
+		LIST* l = var_get("JAM_TARGETS");
 		int targetCount = list_length(l);
-		char **targets;
+		char** targets;
 		int i;
 
 		if (targetCount == 0) {
 			/* No targets. Nothing to do. */
-			exit( EXITOK );
+			exit(EXITOK);
 		}
 
 		targets = malloc(targetCount * sizeof(char*));
 		if (!targets) {
-			printf( "Memory allocation failed!\n" );
-			exit( EXITBAD );
+			printf("Memory allocation failed!\n");
+			exit(EXITBAD);
 		}
 
 		for (i = 0; i < targetCount; i++) {
@@ -422,10 +425,10 @@ main( int argc, char **argv, char **arg_environ )
 
 	/* Now make target */
 
-	if( !argc )
-	    status |= make( 1, &all, anyhow );
+	if (!argc)
+		status |= make(1, &all, anyhow);
 	else
-	    status |= make( argc, (const char **)argv, anyhow );
+		status |= make(argc, (const char**)argv, anyhow);
 
 	/* Widely scattered cleanup */
 
@@ -436,8 +439,8 @@ main( int argc, char **argv, char **arg_environ )
 
 	/* close cmdout */
 
-	if( globs.cmdout )
-	    fclose( globs.cmdout );
+	if (globs.cmdout)
+		fclose(globs.cmdout);
 
 	return status ? EXITBAD : EXITOK;
 }

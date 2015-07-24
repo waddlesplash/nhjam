@@ -7,4 +7,4 @@ void jcache_init(void);
 void jcache_done(void);
 char** jcache(char* filename);
 
-#endif	// _JCACHE_H
+#endif // _JCACHE_H

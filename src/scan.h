@@ -18,8 +18,8 @@
  *
  * The yymode() function is for the parser to adjust the lexicon of the
  * scanner.  Aside from normal keyword scanning, there is a mode to
- * handle action strings (look only for the closing }) and a mode to 
- * ignore most keywords when looking for a punctuation keyword.  This 
+ * handle action strings (look only for the closing }) and a mode to
+ * ignore most keywords when looking for a punctuation keyword.  This
  * allows non-punctuation keywords to be used in lists without quoting.
  *
  * 11/04/02 (seiwald) - const-ing for string literals
@@ -29,26 +29,26 @@
  * YYSTYPE - value of a lexical token
  */
 
-# define YYSTYPE YYSYMBOL
+#define YYSTYPE YYSYMBOL
 
 typedef struct _YYSTYPE {
-	int		type;
-	const char	*string;
-	PARSE		*parse;
-	LIST		*list;
-	int		number;
+	int type;
+	const char* string;
+	PARSE* parse;
+	LIST* list;
+	int number;
 } YYSTYPE;
 
 extern YYSTYPE yylval;
 
-void yymode( int n );
-void yyerror( const char *s );
+void yymode(int n);
+void yyerror(const char* s);
 int yyanyerrors();
-void yyfparse( const char *s );
+void yyfparse(const char* s);
 int yyline();
 int yylex();
 int yyparse();
 
-# define SCAN_NORMAL	0	/* normal parsing */
-# define SCAN_STRING	1	/* look only for matching } */
-# define SCAN_PUNCT	2	/* only punctuation keywords */
+#define SCAN_NORMAL 0 /* normal parsing */
+#define SCAN_STRING 1 /* look only for matching } */
+#define SCAN_PUNCT 2  /* only punctuation keywords */
