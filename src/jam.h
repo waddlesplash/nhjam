@@ -94,7 +94,9 @@
 #define OS_NT
 #define SPLITPATH ';'
 #define MAXLINE 996 /* longest 'together' actions */
+#ifndef PATH_MAX
 #define PATH_MAX _MAX_PATH
+#endif
 #define USE_EXECUNIX
 #define USE_PATHUNIX
 #define PATH_DELIM '\\'
