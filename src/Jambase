@@ -318,10 +318,7 @@ if $(NT)
         C++FLAGS    ?= $(CCFLAGS) ;
         LINK        ?= link /nologo ;
         LINKFLAGS   ?= "" ;
-        LINKLIBS    ?=
-                $(MSVCNT)\\lib\\$(I)libc.lib
-                $(MSVCNT)\\lib\\$(I)oldnames.lib
-                $(MSVCNT)\\lib\\$(I)kernel32.lib ;
+        LINKLIBS    ?= ;
         OPTIM       ?= "" ;
         STDHDRS     ?= $(VISUALC)\\include ;
         UNDEFFLAG   ?= "/u _" ;
@@ -346,10 +343,7 @@ if $(NT)
         C++FLAGS    ?= $(CCFLAGS) ;
         LINK        ?= link /nologo ;
         LINKFLAGS   ?= "" ;
-        LINKLIBS    ?= $(VISUALC)\\lib\\advapi32.lib
-               $(VISUALC)\\lib\\libc.lib
-               $(VISUALC)\\lib\\oldnames.lib
-               $(VISUALC)\\lib\\kernel32.lib ;
+        LINKLIBS    ?= ;
         OPTIM       ?= "" ;
         STDHDRS     ?= $(INTELC)\include $(VISUALC)\\include ;
         UNDEFFLAG   ?= "/u _" ;
