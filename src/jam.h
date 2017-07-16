@@ -93,7 +93,7 @@
 #define OSMINOR "OS=NT"
 #define OS_NT
 #define SPLITPATH ';'
-#define MAXLINE 996 /* longest 'together' actions */
+#define MAXLINE 9216 /* longest 'together' actions */
 #ifndef PATH_MAX
 #define PATH_MAX _MAX_PATH
 #endif
@@ -467,7 +467,7 @@
 
 /* You probably don't need to muck with these. */
 
-#define MAXSYM 1024   /* longest symbol in the environment */
+#define MAXSYM 2048   /* longest symbol in the environment */
 #define MAXJPATH 1024 /* longest filename */
 
 #define MAXJOBS 64 /* silently enforce -j limit */

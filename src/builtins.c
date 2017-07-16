@@ -258,6 +258,10 @@ LIST* builtin_match(PARSE* parse, LOL* args, int* jmp)
 				for (i = 1; i <= top; i++) {
 					char buf[MAXSYM];
 					int l = re->endp[i] - re->startp[i];
+					if (l > MAXSYM) {
+						printf("MAXSYM is too low! NEed at least %d\n", l);
+						exit(-1);
+					}
 					memcpy(buf, re->startp[i], l);
 					buf[l] = 0;
 					result = list_new(result, buf, 0);
