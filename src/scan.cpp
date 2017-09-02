@@ -137,7 +137,7 @@ int yyline()
 #ifdef OPT_JAMFILE_CACHE_EXT
 	if (!i->file) {
 		if (strcmp(i->fname, "-")) {
-			i->strings = jcache((char*)i->fname);
+			i->strings = (const char**)jcache((char*)i->fname);
 			if (!i->strings || !*i->strings)
 				goto next;
 			i->line++;

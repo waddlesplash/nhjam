@@ -1,12 +1,13 @@
 // jcache.c
 
+#include "jam.h"
+
 #ifdef OPT_JAMFILE_CACHE_EXT
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "jam.h"
 #include "jcache.h"
 #include "filesys.h"
 #include "hash.h"
@@ -474,7 +475,7 @@ static int read_jcache(jamfile_cache* cache, char* filename)
 				jcache_entry entry = {0, 0, 0};
 				// entry name, time and line count
 				if (file_read_line(file, entryname, sizeof(entryname)) &&
-					strlen(entryname) > 0 && file_read_line_long(file, &time) &&
+						strlen(entryname) > 0 && file_read_line_long(file, &time) &&
 					file_read_line_long(file, &lineCount) &&
 					(init_jcache_entry(&entry, entryname, time, 0)) != 0) {
 					// read the lines
