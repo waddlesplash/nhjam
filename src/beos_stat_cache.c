@@ -1,6 +1,6 @@
 // beos_stat_cache.c
 
-#if defined(__BEOS___) || defined(__HAIKU__)
+#if defined(__BEOS___)
 
 #include <errno.h>
 #include <stdio.h>
