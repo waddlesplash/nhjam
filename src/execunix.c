@@ -62,7 +62,7 @@
 #define USE_MYWAIT
 #if !defined(__BORLANDC__)
 #define wait my_wait
-static int my_wait(int* status);
+static HANDLE my_wait(int* status);
 #endif
 #endif
 
@@ -71,7 +71,11 @@ static int cmdsrunning = 0;
 static void (*istat)(int);
 
 static struct {
-	int pid; /* on win32, a real process handle */
+#ifdef OS_NT
+	HANDLE pid;
+#else
+	int pid;
+#endif
 	void (*func)(void* closure, int status);
 	void* closure;
 
@@ -98,7 +102,11 @@ void onintr(int disp)
 void execcmd(char* string, void (*func)(void* closure, int status),
 			 void* closure, LIST* shell)
 {
+#ifdef USE_EXECNT
+	HANDLE pid;
+#else
 	int pid;
+#endif
 	int slot;
 	const char* argv[MAXARGC + 1]; /* +1 for NULL */
 
@@ -254,7 +262,12 @@ void execcmd(char* string, void (*func)(void* closure, int status),
 int execwait()
 {
 	int i;
-	int status, w;
+	int status;
+#ifdef USE_EXECNT
+	HANDLE w;
+#else
+	int w;
+#endif
 	int rstat;
 
 	/* Handle naive make1() which doesn't know if cmds are running. */
@@ -311,7 +324,7 @@ int execwait()
 
 #ifdef USE_MYWAIT
 
-static int my_wait(int* status)
+static HANDLE my_wait(int* status)
 {
 	int i, num_active = 0;
 	DWORD exitcode, waitcode;
@@ -325,11 +338,11 @@ static int my_wait(int* status)
 	 */
 	for (i = 0; i < globs.jobs; i++) {
 		if (cmdtab[i].pid) {
-			if (GetExitCodeProcess((HANDLE)cmdtab[i].pid, &exitcode)) {
+			if (GetExitCodeProcess(cmdtab[i].pid, &exitcode)) {
 				if (exitcode == STILL_ACTIVE)
-					active_handles[num_active++] = (HANDLE)cmdtab[i].pid;
+					active_handles[num_active++] = cmdtab[i].pid;
 				else {
-					CloseHandle((HANDLE)cmdtab[i].pid);
+					CloseHandle(cmdtab[i].pid);
 					*status = (int)((exitcode & 0xff) << 8);
 					return cmdtab[i].pid;
 				}
@@ -354,7 +367,7 @@ static int my_wait(int* status)
 		if (GetExitCodeProcess(active_handles[i], &exitcode)) {
 			CloseHandle(active_handles[i]);
 			*status = (int)((exitcode & 0xff) << 8);
-			return (int)active_handles[i];
+			return active_handles[i];
 		}
 	}
 

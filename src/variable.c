@@ -170,7 +170,7 @@ int var_string(const char* in, char* out, int outsize, LOL* lol)
 			out = lastword;
 
 			while (l) {
-				int so = strlen(l->string);
+				size_t so = strlen(l->string);
 
 				if (out + so >= oute)
 					return -1;

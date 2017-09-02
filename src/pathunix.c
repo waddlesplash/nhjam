@@ -41,6 +41,10 @@
 #if defined(unix)
 #include <unistd.h>
 #endif
+#ifdef _WIN32
+#include <io.h>
+#define getcwd _getcwd
+#endif
 
 /*
  * path_parse() - split a file name into dir/base/suffix/member
@@ -228,7 +232,7 @@ char* normalize_path(const char* path, char* buffer, size_t bufferSize)
 	static char _cwd[PATH_MAX];
 	static char* cwd = 0;
 	static size_t cwdLen = 0;
-	int pathLen = (path ? strlen(path) : 0);
+	size_t pathLen = (path ? strlen(path) : 0);
 	int resultLen = 0;
 	int resolveDotDot = !0;
 	// init cwd

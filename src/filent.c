@@ -50,7 +50,7 @@
  *	file_dirscan() - scan a directory for files
  */
 
-#ifdef _M_IA64
+#ifdef _M_X64
 #define FINDTYPE long long
 #else
 #define FINDTYPE long

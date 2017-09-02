@@ -57,7 +57,6 @@ void headers(TARGET* t)
 {
 	LIST* hdrscan;
 	LIST* hdrrule;
-	LIST* hdrcache;
 	LOL lol;
 
 	if (!(hdrscan = var_get("HDRSCAN")) || !(hdrrule = var_get("HDRRULE")))

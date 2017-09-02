@@ -207,7 +207,7 @@ expand:
 			/* Must copy into varname so we can modify it */
 
 			if (strlen(vars->string) > MAXSYM) {
-				printf("MAXSYM is too low! Need at least %d\n", l);
+				printf("MAXSYM is too low! Need at least %d\n", strlen(vars->string));
 				exit(-1);
 			}
 			strcpy(varname, vars->string);

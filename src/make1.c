@@ -405,7 +405,6 @@ static CMD* make1cmds(ACTIONS* a0)
 		SETTINGS* boundvars;
 		LIST* nt, *ns;
 		ACTIONS* a1;
-		CMD* cmd;
 		int start, chunk, length, maxline;
 		int missingTargets = 0;
 		int ruleFlags = rule->flags;
