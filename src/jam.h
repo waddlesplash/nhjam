@@ -77,7 +77,7 @@
  * Windows NT
  */
 
-#ifdef NT
+#ifdef _WIN32
 
 #include <fcntl.h>
 #include <stdlib.h>
