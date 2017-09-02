@@ -22,10 +22,10 @@ else 		{ LOCATE_TARGET ?= bin.$(OSFULL[1]:L) ; }
 # We have some different files for UNIX, VMS, and NT.
 #
 
-if $(NT) 	{ code = execunix.c filent.c pathunix.c ; } 
-else if $(MINGW) { code = execunix.c filent.c pathunix.c ; } 
-else if $(OS2)	{ code = execunix.c fileos2.c pathunix.c ; } 
-else if $(VMS) 	{ code = execvms.c filevms.c pathvms.c ; } 
+if $(NT) 	{ code = execunix.c filent.c pathunix.c ; }
+else if $(MINGW) { code = execunix.c filent.c pathunix.c ; }
+else if $(OS2)	{ code = execunix.c fileos2.c pathunix.c ; }
+else if $(VMS) 	{ code = execvms.c filevms.c pathvms.c ; }
 else if $(MAC)	{ code = execmac.c filemac.c pathmac.c ; }
 else 		{ code = execunix.c fileunix.c pathunix.c ; }
 
@@ -46,12 +46,8 @@ if $(DEBUG)
 	LOCATE_TARGET = $(LOCATE_TARGET)/g ;
 }
 
-# We have to signal jam.h for these
-
-if $(OS) = NT 			{ CCFLAGS += /DNT ; }
-
 ### LOCAL CHANGE
-# 
+#
 # Include:
 # * header caching
 # * jamfile caching
@@ -64,7 +60,7 @@ DEFINES += OPT_JAM_TARGETS_VARIABLE_EXT ;
 ### LOCAL CHANGE
 
 ### LOCAL CHANGE
-# 
+#
 # Include rule profiling support, if specified in the environment.
 #
 if $(OPT_RULE_PROFILING_EXT) {
@@ -74,7 +70,7 @@ if $(OPT_RULE_PROFILING_EXT) {
 ### LOCAL CHANGE
 
 ### LOCAL CHANGE
-# 
+#
 # Include stat cache server under BeOS.
 #
 if $(OS) = BEOS {
@@ -100,7 +96,7 @@ if $(YACC) && $(SUFEXE) = ""
 }
 
 ### LOCAL CHANGE
-# 
+#
 # These files contain locally developed improvements.
 #
 code += jcache.c ;
@@ -110,7 +106,7 @@ code += hcache.c ;
 ### LOCAL CHANGE
 
 ### LOCAL CHANGE
-# 
+#
 # Include stat cache server under BeOS.
 #
 if $(OS) = BEOS {
@@ -164,7 +160,7 @@ Library         libjam.a :
 if $(BINDIR) 	{ InstallBin $(BINDIR) : jam ; }
 
 ### LOCAL CHANGE
-# 
+#
 # Build stat cache server under BeOS.
 #
 if $(OS) = BEOS {
@@ -247,7 +243,7 @@ rule Ball
 
 	DEPENDS $(<) : $(>) ;
 
-	switch $(<) 
+	switch $(<)
 	{
 	case *.tar : Tar $(<) : $(>) ;
 	case *.shar : Shar $(<) : $(>) ;
@@ -271,7 +267,7 @@ actions Shar
 
 actions Zip
 {
-	zip $(<) $(>) 
+	zip $(<) $(>)
 }
 
 Ball $(VERSION).shar : $(ALLSOURCE) ;
