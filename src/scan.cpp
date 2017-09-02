@@ -38,7 +38,7 @@ struct keyword {
 struct include {
 	struct include* next; /* next serial include file */
 	const char* string;   /* pointer into current line */
-	char** strings;		  /* for yyfparse() -- text to parse */
+	const char** strings; /* for yyfparse() -- text to parse */
 	FILE* file;			  /* for yyfparse() -- file being read */
 	const char* fname;	/* for yyfparse() -- file name */
 	int line;			  /* line counter for error messages */

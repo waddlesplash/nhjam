@@ -167,7 +167,7 @@ extern char** environ;
 #endif
 #endif
 
-main(int argc, char** argv, char** arg_environ)
+int main(int argc, char* argv[])
 {
 	int n;
 	const char* s;

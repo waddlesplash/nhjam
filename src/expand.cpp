@@ -462,7 +462,7 @@ static void var_edit_parse(const char* mods, VAR_EDITS* edits)
 		if (*mods != '=') {
 			fp->ptr = "";
 			fp->len = 0;
-		} else if (p = strchr(mods, MAGIC_COLON)) {
+		} else if (p = (char*)strchr(mods, MAGIC_COLON)) {
 			*p = 0;
 			fp->ptr = ++mods;
 			fp->len = p - mods;

@@ -42,7 +42,7 @@
 #include <unistd.h>
 #endif
 #ifdef _WIN32
-#include <io.h>
+#include <direct.h>
 #define getcwd _getcwd
 #endif
 
@@ -72,7 +72,7 @@ void path_parse(const char* file, PATHNAME* f)
 #if PATH_DELIM == '\\'
 	/* On NT, look for dir\ as well */
 	{
-		char* p1 = strrchr(file, '\\');
+		char* p1 = (char*)strrchr(file, '\\');
 		p = p1 > p ? p1 : p;
 	}
 #endif
@@ -263,7 +263,7 @@ char* normalize_path(const char* path, char* buffer, size_t bufferSize)
 	// components, and chopping off a component per ".."
 	while (pathLen > 0) {
 		// find component
-		char* separator = strchr(path, PATH_DELIM);
+		char* separator = (char*)strchr(path, PATH_DELIM);
 		const char* component = path;
 		int componentLen = 0;
 		if (separator) {

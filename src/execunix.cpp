@@ -56,13 +56,14 @@
 
 #ifdef OS_NT
 #define USE_EXECNT
+#define NO_VFORK
 #include <process.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h> /* do the ugly deed */
 #define USE_MYWAIT
 #if !defined(__BORLANDC__)
 #define wait my_wait
-static HANDLE my_wait(int* status);
+static HANDLE my_wait(HANDLE* status);
 #endif
 #endif
 
@@ -134,7 +135,7 @@ void execcmd(char* string, void (*func)(void* closure, int status),
 
 		/* +32 is room for \jamXXXXXtSS.bat (at least) */
 
-		cmdtab[slot].tempfile = malloc(strlen(tempdir) + 32);
+		cmdtab[slot].tempfile = (char*)malloc(strlen(tempdir) + 32);
 
 		sprintf(cmdtab[slot].tempfile, "%s\\jam%dt%d.bat", tempdir,
 				GetCurrentProcessId(), slot);
@@ -219,7 +220,7 @@ void execcmd(char* string, void (*func)(void* closure, int status),
 /* Start the command */
 
 #ifdef USE_EXECNT
-	if ((pid = spawnvp(P_NOWAIT, argv[0], argv)) == -1) {
+	if ((pid = (HANDLE)spawnvp(P_NOWAIT, argv[0], (char*const*)argv)) == (HANDLE)-1) {
 		perror("spawn");
 		exit(EXITBAD);
 	}
@@ -262,11 +263,12 @@ void execcmd(char* string, void (*func)(void* closure, int status),
 int execwait()
 {
 	int i;
-	int status;
 #ifdef USE_EXECNT
-	HANDLE w;
+#define CASTTO (HANDLE)
+	HANDLE w, status;
 #else
-	int w;
+#define CASTTO
+	int w, status;
 #endif
 	int rstat;
 
@@ -278,10 +280,10 @@ int execwait()
 	do {
 		/* Pick up process pid and status */
 
-		while ((w = wait(&status)) == -1 && errno == EINTR)
+		while ((w = wait(&status)) == CASTTO -1 && errno == EINTR)
 			;
 
-		if (w == -1) {
+		if (w == CASTTO -1) {
 			printf("child process(es) lost!\n");
 			perror("wait");
 			exit(EXITBAD);
@@ -310,7 +312,7 @@ int execwait()
 
 	if (intr)
 		rstat = EXEC_CMD_INTR;
-	else if (w == -1 || status != 0)
+	else if (w == CASTTO -1 || status != 0)
 		rstat = EXEC_CMD_FAIL;
 	else
 		rstat = EXEC_CMD_OK;
@@ -324,7 +326,7 @@ int execwait()
 
 #ifdef USE_MYWAIT
 
-static HANDLE my_wait(int* status)
+static HANDLE my_wait(HANDLE* status)
 {
 	int i, num_active = 0;
 	DWORD exitcode, waitcode;
@@ -343,7 +345,7 @@ static HANDLE my_wait(int* status)
 					active_handles[num_active++] = cmdtab[i].pid;
 				else {
 					CloseHandle(cmdtab[i].pid);
-					*status = (int)((exitcode & 0xff) << 8);
+					*status = (HANDLE)((exitcode & 0xff) << 8);
 					return cmdtab[i].pid;
 				}
 			} else
@@ -354,7 +356,7 @@ static HANDLE my_wait(int* status)
 	/* if a child exists, wait for it to die */
 	if (!num_active) {
 		errno = ECHILD;
-		return -1;
+		return (HANDLE)-1;
 	}
 	waitcode =
 		WaitForMultipleObjects(num_active, active_handles, FALSE, INFINITE);
@@ -366,14 +368,14 @@ static HANDLE my_wait(int* status)
 			i = waitcode - WAIT_OBJECT_0;
 		if (GetExitCodeProcess(active_handles[i], &exitcode)) {
 			CloseHandle(active_handles[i]);
-			*status = (int)((exitcode & 0xff) << 8);
+			*status = (HANDLE)((exitcode & 0xff) << 8);
 			return active_handles[i];
 		}
 	}
 
 FAILED:
 	errno = GetLastError();
-	return -1;
+	return (HANDLE)-1;
 }
 
 #endif /* USE_MYWAIT */
