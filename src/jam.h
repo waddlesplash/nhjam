@@ -263,7 +263,7 @@
 #define OS_ISC
 #define NO_VFORK
 #endif
-#ifdef linux
+#if defined(linux) || defined(__linux__)
 #define OSMINOR "OS=LINUX"
 #define OS_LINUX
 #endif

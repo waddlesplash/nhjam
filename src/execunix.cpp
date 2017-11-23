@@ -52,6 +52,7 @@
 
 #ifdef unix
 #include <unistd.h>
+#include <sys/wait.h>
 #endif
 
 #ifdef OS_NT

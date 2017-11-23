@@ -39,29 +39,10 @@
 
 #ifdef USE_FILEUNIX
 
-#if defined(OS_SEQUENT) || defined(OS_DGUX) || defined(OS_SCO) ||              \
-	defined(OS_ISC)
-#define PORTAR 1
-#endif
-
-#if defined(OS_RHAPSODY) || defined(OS_MACOSX) || defined(OS_NEXT)
-/* need unistd for rhapsody's proper lseek */
 #include <sys/dir.h>
 #include <unistd.h>
-#define STRUCT_DIRENT struct direct
-#else
 #include <dirent.h>
 #define STRUCT_DIRENT struct dirent
-#endif
-
-#ifdef __CYGWIN__
-#include <unistd.h>
-#endif
-
-#ifdef OS_COHERENT
-#include <arcoff.h>
-#define HAVE_AR
-#endif
 
 #if defined(OS_MVS) || defined(OS_INTERIX)
 

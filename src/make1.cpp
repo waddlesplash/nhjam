@@ -62,6 +62,8 @@
 #include "command.h"
 #include "execcmd.h"
 
+#include <unistd.h>
+
 static void make1a(TARGET* t, TARGET* parent);
 static void make1b(TARGET* t);
 static void make1c(TARGET* t);
