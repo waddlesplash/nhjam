@@ -35,6 +35,8 @@
  * 12/17/02 (seiwald) - new copysettings() to protect target-specific vars
  * 01/14/03 (seiwald) - fix includes fix with new internal includes TARGET
  */
+#ifndef JAM_RULES_H
+#define JAM_RULES_H
 
 #ifdef OPT_RULE_PROFILING_EXT
 #include <stdint.h>
@@ -187,3 +189,5 @@ void pushsettings(SETTINGS* v);
 void popsettings(SETTINGS* v);
 void freesettings(SETTINGS* v);
 void donerules();
+
+#endif /* JAM_RULES_H */

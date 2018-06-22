@@ -37,6 +37,8 @@
  * 09/19/02 (seiwald) - new -d displays
  * 11/05/02 (seiwald) - OSPLAT now set to sparc on solaris.
  */
+#ifndef JAM_H
+#define JAM_H
 
 /*
  * VMS, OPENVMS
@@ -521,3 +523,5 @@ extern struct globs globs;
 #ifdef OPT_RULE_PROFILING_EXT
 #define DEBUG_PROFILE_RULES (globs.debug[15]) /* -dp profile rules */
 #endif
+
+#endif /* JAM_H */
