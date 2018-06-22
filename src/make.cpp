@@ -63,6 +63,10 @@
 #include "headers.h"
 #include "command.h"
 
+#ifdef OPT_HEADER_CACHE_EXT
+#include "hcache.h"
+#endif
+
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif

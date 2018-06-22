@@ -81,8 +81,9 @@ if $(OS) = BEOS {
 
 # Do we know yacc?
 
-if $(YACC) 	{ code += jamgram.y ; }
-else            { code += jamgram.cpp ; }
+#if $(YACC) 	{ code += jamgram.y ; }
+#else
+{ code += jamgram.cpp ; }
 
 #
 # Build the jamgram.y from the jamgram.yy

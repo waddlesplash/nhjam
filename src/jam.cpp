@@ -407,7 +407,7 @@ int main(int argc, char* argv[])
 			exit(EXITOK);
 		}
 
-		targets = malloc(targetCount * sizeof(char*));
+		targets = (char**)malloc(targetCount * sizeof(char*));
 		if (!targets) {
 			printf("Memory allocation failed!\n");
 			exit(EXITBAD);
